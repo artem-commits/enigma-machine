@@ -88,7 +88,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'enigma' %}">
-                <i class="fas fa-key me-2"></i>Машина Enigma
+                <i class="fas fa-key me-2"></i>Криптографическая лаборатория
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -105,6 +105,12 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'decrypt' %}active{% endif %}" 
                            href="{% url 'decrypt' %}">
                             <i class="fas fa-unlock-alt me-1"></i>Расшифровка
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'hash_view' %}active{% endif %}" 
+                           href="{% url 'hash_view' %}">
+                            <i class="fas fa-hashtag me-1"></i>Хеширование
                         </a>
                     </li>
                 </ul>

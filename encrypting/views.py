@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import EnigmaForm, DecryptForm
 from .algorithms.enigma import Enigma
 from .algorithms.rotor import Rotor
@@ -8,6 +8,10 @@ from .algorithms.keyboard import Keyboard
 import time
 import itertools
 import string
+from .algorithms.hash import simple_hash, find_collision
+from django.urls import reverse
+from django.contrib import messages
+from django.urls import reverse
 
 
 def encipher_view(request):
@@ -98,7 +102,6 @@ def decrypt_view(request):
             # Create keyboard and empty plugboard
             kb = Keyboard()
             pb = Plugboard([])
-
 
             # Настройки для перебора
             reflector_list = [known_reflector] if known_reflector is not '' else ['A', 'B', 'C']
@@ -198,3 +201,38 @@ def decrypt_view(request):
     return render(request, 'encrypting/decrypt.html', {'form': form})
 
 
+def hash_view(request):
+    """Представление для страницы хеширования."""
+    return render(request, 'encrypting/hash.html')
+
+
+def hash_text(request):
+    """Обработка запроса на хеширование текста."""
+    if request.method == 'POST':
+        text = request.POST.get('text', '')
+        hash_result = hex(simple_hash(text))
+        return render(request, 'encrypting/hash.html', {'hash_result': hash_result})
+    return redirect('hash_view')
+
+
+def find_collision_view(request):
+    """Обработка запроса на поиск коллизии."""
+    if request.method == 'POST':
+        try:
+            target_hash = int(request.POST.get('target_hash', ''), 16)  # Предполагаем, что хеш введен в hex
+            max_length = int(request.POST.get('max_length', 4))
+
+            # Ограничиваем максимальную длину для безопасности
+            max_length = min(max_length, 8)
+
+            result, result_hash = find_collision(target_hash, max_length)
+
+            context = {
+                'collision_result': result,
+                'collision_hash': hex(result_hash) if result_hash is not None else None
+            }
+            return render(request, 'encrypting/hash.html', context)
+        except ValueError:
+            messages.error(request, 'Неверный формат хеша. Используйте шестнадцатеричное число.')
+            return redirect('hash_view')
+    return redirect('hash_view')
