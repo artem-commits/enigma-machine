@@ -1,10 +1,14 @@
 from django.shortcuts import render
-from .forms import EnigmaForm
+from .forms import EnigmaForm, DecryptForm
 from .algorithms.enigma import Enigma
 from .algorithms.rotor import Rotor
 from .algorithms.reflector import Reflector
 from .algorithms.plugboard import Plugboard
 from .algorithms.keyboard import Keyboard
+import time
+import itertools
+import string
+
 
 def encipher_view(request):
     if request.method == 'POST':
@@ -79,4 +83,118 @@ def encipher_view(request):
         form = EnigmaForm()
 
     return render(request, 'encrypting/enigma.html', {'form': form})
+
+
+def decrypt_view(request):
+    if request.method == 'POST':
+        form = DecryptForm(request.POST)
+        if form.is_valid():
+            # Get form data
+            encrypted_message = form.cleaned_data['encrypted_message'].upper()
+            known_text = form.cleaned_data['known_text'].upper()
+            max_attempts = form.cleaned_data['max_attempts']
+            known_reflector = form.cleaned_data['reflector']
+
+            # Create keyboard and empty plugboard
+            kb = Keyboard()
+            pb = Plugboard([])
+
+
+            # Настройки для перебора
+            reflector_list = [known_reflector] if known_reflector is not '' else ['A', 'B', 'C']
+            rotor_combos = list(itertools.permutations(['I', 'II', 'III'], 3))
+            positions = list(itertools.product('ABCDEFG', repeat=3))
+            rings = [(1, 1, 1)]  # фиксированные кольцевые настройки
+
+            start_time = time.time()
+            attempts = 0
+            found = False  # флаг успешного нахождения
+
+            for reflector_name in reflector_list:
+                print("Пробуем рефлектор:", reflector_name)
+                for rotor_combo in rotor_combos:
+                    print("Комбинация роторов:", rotor_combo)
+                    for pos1, pos2, pos3 in list(positions):
+                        print("Позиции:", pos1, pos2, pos3)
+                        for ring1, ring2, ring3 in rings:
+                            if attempts >= max_attempts:
+                                found = False
+                                break
+
+                            reflectors = {
+                                'A': Reflector('EJMZALYXVBWFCRQUONTSPIKHGD'),
+                                'B': Reflector('YRUHQSLDPXNGOKMIEBFZCWVJAT'),
+                                'C': Reflector('FVPJIAOYEDRZXWGCTKUQSBNMHL')
+                            }
+
+                            rotor_definitions = {
+                                'I': ('EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'Q'),
+                                'II': ('AJDKSIRUXBLHWTMCQGZNPYFVOE', 'E'),
+                                'III': ('BDFHJLCPRTXVZNYEIWGAKMUSQO', 'V'),
+                                'IV': ('ESOVPZJAYQUIRHXLNFTGKDCMWB', 'J'),
+                                'V': ('VZBRGITYUPSDNHLXAWMJQOFECK', 'Z')
+                            }
+
+                            r1 = Rotor(*rotor_definitions[rotor_combo[0]])
+                            r2 = Rotor(*rotor_definitions[rotor_combo[1]])
+                            r3 = Rotor(*rotor_definitions[rotor_combo[2]])
+
+                            # Создание машины Enigma
+                            enigma = Enigma(
+                                reflectors[reflector_name],
+                                r1,
+                                r2,
+                                r3,
+                                pb,
+                                kb
+                            )
+
+                            enigma.set_rings((ring1, ring2, ring3))
+                            enigma.set_key(pos1 + pos2 + pos3)
+
+                            # Расшифровка
+                            decrypted = ''.join(
+                                enigma.encipher(letter) if letter.isalpha() else letter
+                                for letter in encrypted_message
+                            )
+
+                            attempts += 1
+
+                            if known_text.replace(" ", "") in decrypted.replace(" ", ""):
+                                time_taken = time.time() - start_time
+                                return render(request, 'encrypting/decrypt.html', {
+                                    'form': form,
+                                    'result': {
+                                        'rotors': f"{rotor_combo[0]}-{rotor_combo[1]}-{rotor_combo[2]}",
+                                        'reflector': reflector_name,
+                                        'positions': f"{pos1}-{pos2}-{pos3}",
+                                        'ring_settings': f"{ring1}-{ring2}-{ring3}",
+                                        'decrypted_message': decrypted,
+                                        'attempts': attempts,
+                                        'time_taken': round(time_taken, 2)
+                                    }
+                                })
+
+                        if attempts >= max_attempts:
+                            break
+                    if attempts >= max_attempts:
+                        break
+                if attempts >= max_attempts:
+                    break
+
+            # Ничего не найдено
+            time_taken = time.time() - start_time
+            return render(request, 'encrypting/decrypt.html', {
+                'form': form,
+                'result': {
+                    'error': 'Не удалось найти подходящие настройки',
+                    'attempts': attempts,
+                    'time_taken': round(time_taken, 2)
+                }
+            })
+    else:
+        form = DecryptForm()
+
+    return render(request, 'encrypting/decrypt.html', {'form': form})
+
 

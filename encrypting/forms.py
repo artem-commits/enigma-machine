@@ -50,3 +50,39 @@ class EnigmaForm(forms.Form):
         label='Сообщение',
         help_text='Введите текст для шифрования/дешифрования'
     )
+
+class DecryptForm(forms.Form):
+    encrypted_message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Введите зашифрованное сообщение'
+        }),
+        label='Зашифрованное сообщение'
+    )
+    
+    known_text = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Например: HELLO'
+        }),
+        label='Известный текст',
+        help_text='Введите часть текста, которая должна быть в расшифрованном сообщении'
+    )
+    
+    max_attempts = forms.IntegerField(
+        min_value=1,
+        max_value=1000000,
+        initial=1000,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control'
+        }),
+        label='Максимальное количество попыток'
+    )
+    
+    reflector = forms.ChoiceField(
+        choices=[('', 'Любой')] + list(REFLECTOR_CHOICES),
+        required=False,
+        label='Рефлектор',
+        help_text='Выберите рефлектор (если известен)'
+    )

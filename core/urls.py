@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from encrypting.views import encipher_view
+from encrypting.views import encipher_view, decrypt_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', encipher_view, name='enigma'),
+    path('decrypt/', decrypt_view, name='decrypt'),
 ]
