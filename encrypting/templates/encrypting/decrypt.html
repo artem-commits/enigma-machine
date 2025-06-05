@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Расшифровка - Машина Enigma{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h2 class="text-center mb-0">
+                    <i class="fas fa-unlock-alt me-2"></i>Расшифровка сообщения
+                </h2>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ field.label }}</label>
+                        {{ field|add_class:"form-control form-control-lg" }}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ field.errors }}
+                        </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-search me-2"></i>Расшифровать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if result %}
+        <div class="card mt-4">
+            <div class="card-header {% if result.error %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h3 class="mb-0">
+                    <i class="fas {% if result.error %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} me-2"></i>
+                    Результат расшифровки
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if result.error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ result.error }}
+                </div>
+                {% else %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="mb-3">
+                            <i class="fas fa-cogs me-2"></i>Найденные настройки
+                        </h4>
+                        <div class="list-group mb-4">
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Роторы</h5>
+                                    <small class="text-muted">Порядок</small>
+                                </div>
+                                <p class="mb-0">{{ result.rotors }}</p>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Рефлектор</h5>
+                                    <small class="text-muted">Тип</small>
+                                </div>
+                                <p class="mb-0">{{ result.reflector }}</p>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Начальные позиции</h5>
+                                    <small class="text-muted">Позиции</small>
+                                </div>
+                                <p class="mb-0">{{ result.positions }}</p>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Кольцевые сдвиги</h5>
+                                    <small class="text-muted">Сдвиги</small>
+                                </div>
+                                <p class="mb-0">{{ result.ring_settings }}</p>
+                            </div>
+                            {% if result.plugboard %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Коммутационная панель</h5>
+                                    <small class="text-muted">Пары</small>
+                                </div>
+                                <p class="mb-0">{{ result.plugboard }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="mb-3">
+                            <i class="fas fa-envelope me-2"></i>Расшифрованное сообщение
+                        </h4>
+                        <div class="alert alert-success">
+                            {{ result.decrypted_message }}
+                        </div>
+                        
+                        <h4 class="mb-3">
+                            <i class="fas fa-chart-bar me-2"></i>Статистика
+                        </h4>
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Количество попыток</h5>
+                                    <span class="badge bg-primary rounded-pill">{{ result.attempts }}</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Время выполнения</h5>
+                                    <span class="badge bg-info rounded-pill">{{ result.time_taken }} сек</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
