@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Хеширование - Машина Enigma{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs {
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .nav-tabs .nav-link {
+        color: #495057 !important;  /* Темно-серый цвет для текста вкладок */
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+        margin-right: 0.5rem;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: var(--accent-color) !important;
+        background-color: #e9ecef;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--accent-color) !important;
+        background-color: white;
+        border-bottom: 3px solid var(--accent-color);
+        font-weight: 600;
+    }
+
+    .tab-content {
+        background-color: white;
+        border-radius: 0 0 10px 10px;
+        padding: 1.5rem;
+    }
+
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .card-title {
+        color: #2c3e50 !important;  /* Темно-синий цвет для заголовков */
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        color: #495057 !important;  /* Темно-серый цвет для меток форм */
+        font-weight: 500;
+    }
+
+    .alert {
+        border-radius: 8px;
+        border: none;
+    }
+
+    .alert-info {
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #2c3e50 !important;  /* Темно-синий цвет для текста в алертах */
+    }
+
+    code {
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #2c3e50 !important;  /* Темно-синий цвет для кода */
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+
+    .btn-primary {
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+    .text-primary {
+        color: #2c3e50 !important;  /* Темно-синий цвет для текста с классом text-primary */
+    }
+
+    .form-text {
+        color: #6c757d !important;  /* Серый цвет для вспомогательного текста */
+    }
+
+    /* Стили для текста в формах */
+    .form-control {
+        color: #2c3e50 !important;  /* Темно-синий цвет для текста в полях ввода */
+    }
+
+    .form-control::placeholder {
+        color: #adb5bd !important;  /* Серый цвет для плейсхолдеров */
+    }
+
+    /* Стили для результатов */
+    .result-text {
+        color: #2c3e50 !important;  /* Темно-синий цвет для текста результатов */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-body p-4">
+                    <ul class="nav nav-tabs" id="hashTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if not collision_result %}active{% endif %}" 
+                                    id="hash-tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#hash" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="hash" 
+                                    aria-selected="{% if not collision_result %}true{% else %}false{% endif %}">
+                                <i class="fas fa-fingerprint me-2"></i>Хеширование
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if collision_result %}active{% endif %}" 
+                                    id="collision-tab" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#collision" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="collision" 
+                                    aria-selected="{% if collision_result %}true{% else %}false{% endif %}">
+                                <i class="fas fa-search me-2"></i>Поиск коллизий
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="hashTabsContent">
+                        <!-- Хеширование -->
+                        <div class="tab-pane fade {% if not collision_result %}show active{% endif %}" 
+                             id="hash" 
+                             role="tabpanel" 
+                             aria-labelledby="hash-tab">
+                            <h5 class="card-title">
+                                <i class="fas fa-fingerprint me-2"></i>Хеширование текста
+                            </h5>
+                            <form method="post" action="{% url 'hash_text' %}">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label for="text" class="form-label">Введите текст для хеширования:</label>
+                                    <textarea class="form-control" id="text" name="text" rows="4" required 
+                                              placeholder="Введите текст, который нужно захешировать..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-calculator me-2"></i>Вычислить хеш
+                                </button>
+                            </form>
+                            {% if hash_result %}
+                            <div class="mt-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-check-circle me-2"></i>Результат хеширования:
+                                </h6>
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Хеш: <code>{{ hash_result }}</code></p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Поиск коллизий -->
+                        <div class="tab-pane fade {% if collision_result %}show active{% endif %}" 
+                             id="collision" 
+                             role="tabpanel" 
+                             aria-labelledby="collision-tab">
+                            <h5 class="card-title">
+                                <i class="fas fa-search me-2"></i>Поиск коллизий
+                            </h5>
+                            <form method="post" action="{% url 'find_collision' %}">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label for="target_hash" class="form-label">Целевой хеш (в шестнадцатеричном формате):</label>
+                                    <input type="text" class="form-control" id="target_hash" name="target_hash" required
+                                           placeholder="Например: 0x1a2b3c4d">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="max_length" class="form-label">Максимальная длина строки:</label>
+                                    <input type="number" class="form-control" id="max_length" name="max_length" 
+                                           min="1" max="8" value="4" required>
+                                    <small class="form-text text-muted">Рекомендуется не более 4-5 символов для быстрого поиска</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Найти коллизию
+                                </button>
+                            </form>
+                            {% if collision_result %}
+                            <div class="mt-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-check-circle me-2"></i>Результат поиска:
+                                </h6>
+                                <div class="alert alert-info">
+                                    <p class="mb-2">Найдена строка: <code>{{ collision_result }}</code></p>
+                                    <p class="mb-0">Её хеш: <code>{{ collision_hash }}</code></p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Сохраняем активную вкладку при отправке формы
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            const activeTab = document.querySelector('.nav-link.active');
+            if (activeTab) {
+                localStorage.setItem('activeHashTab', activeTab.id);
+            }
+        });
+    });
+
+    // Восстанавливаем активную вкладку после перезагрузки
+    const savedTab = localStorage.getItem('activeHashTab');
+    if (savedTab) {
+        const tab = document.getElementById(savedTab);
+        if (tab) {
+            const tabInstance = new bootstrap.Tab(tab);
+            tabInstance.show();
+        }
+        localStorage.removeItem('activeHashTab');
+    }
+});
+</script>
+{% endblock %}
+
+{% endblock %} 
