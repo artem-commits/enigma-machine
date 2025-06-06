@@ -54,7 +54,6 @@ The application will be available at `http://localhost:8000`
 - `encrypting/` - Encryption-related functionality
 - `manage.py` - Django management script
 - `requirements.txt` - Project dependencies
-
 ## Usage
 
 1. Access the web interface through your browser
@@ -62,6 +61,9 @@ The application will be available at `http://localhost:8000`
 3. Configure encryption settings (if applicable)
 4. Click encrypt/decrypt to process your message
 5. View the encrypted/decrypted result
+
+![](../../../../var/folders/3v/_n2870pj0knfxkrw6xfxwqbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_42zRnY/Screenshot 2025-06-06 at 20.12.34.png)
+
 
 ## Author
 
