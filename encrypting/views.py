@@ -219,19 +219,18 @@ def find_collision_view(request):
     """Обработка запроса на поиск коллизии."""
     if request.method == 'POST':
         try:
-            target_hash = int(request.POST.get('target_hash', ''), 16)  # Предполагаем, что хеш введен в hex
+            target_hash = int(request.POST.get('target_hash', ''), 16)  # Хеш в hex
             max_length = int(request.POST.get('max_length', 4))
-
-            # Ограничиваем максимальную длину для безопасности
             max_length = min(max_length, 8)
 
-            result, result_hash = find_collision(target_hash, max_length)
+            collisions = find_collision(target_hash, max_length)
 
             context = {
-                'collision_result': result,
-                'collision_hash': hex(result_hash) if result_hash is not None else None
+                'collisions': collisions,
+                'target_hash': hex(target_hash),
             }
             return render(request, 'encrypting/hash.html', context)
+
         except ValueError:
             messages.error(request, 'Неверный формат хеша. Используйте шестнадцатеричное число.')
             return redirect('hash_view')
