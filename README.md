@@ -62,9 +62,6 @@ The application will be available at `http://localhost:8000`
 4. Click encrypt/decrypt to process your message
 5. View the encrypted/decrypted result
 
-![](../../../../var/folders/3v/_n2870pj0knfxkrw6xfxwqbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_42zRnY/Screenshot 2025-06-06 at 20.12.34.png)
-
-
 ## Author
 
 - Artem Commits - [GitHub Profile](https://github.com/artem-commits)
